@@ -1,0 +1,23 @@
+{
+  "name": "nvbcbooking",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kuanyao/nvbcbooking.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kuanyao/nvbcbooking/issues"
+  },
+  "homepage": "https://github.com/kuanyao/nvbcbooking#readme",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "moment": "^2.29.1"
+  }
+}
