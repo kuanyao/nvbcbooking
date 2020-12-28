@@ -1,35 +1,42 @@
 const axios = require('axios');
 const moment = require('moment');
+const AWS = require('aws-sdk');
 
 const clientId = "23719554"; 	// me
 const locationId = "14743"; 	// nvbc
 const packageId = "23989867"; 	// covid-19
+const snsTopic = "arn:aws:sns:us-east-1:456270554954:nvbc_notif";
 const desiredCounts = ['Court 1', 'Court 6', 'Court 2'];
-const desiredTimeSlots = [ { Day: 'Saturday', Time: '2PM'}, {Day: 'Saturday', Time: '3PM'}];
+const desiredTimeSlots = [ { Day: 'Saturday', Time: '2PM'}, {Day: 'Saturday', Time: '3PM'}, {Day: 'Monday', Time: '3PM'}];
+
+let reservationMap = new Map();
 
 async function findReservationTarget(seed, slot, court) {
     const maxCall = 100;
     let reservationIdGuess = seed;
     for (let count = 0; count < maxCall; ++count) {
-        console.log(`making a guess reservation id = ${reservationIdGuess}`);
-        let nextCourt = await axios.post('https://nvbc.ezfacility.com/Sessions/GetReservationForBooking', {
-            ClientId: clientId,
-            LocationId: locationId,
-            ReservationId: reservationIdGuess
-        })
-        .then(response => {
-            return response.data;
-        })
-        .catch(err => {
-            console.error(err.statusText);
-            return { id: NaN }
-        });
-        if (!isNaN(nextCourt.id)) {
-            let day = moment(nextCourt.start).format('dddd ha').toLowerCase();
-            console.log(`found ${nextCourt.resourceName} on ${day}`);
-            if (day === `${slot.Day} ${slot.Time}`.toLowerCase() && nextCourt.resourceName === court) {
-                console.log(`guessed ${count} times.`);
-                return nextCourt;
+        if (!reservationMap.has(reservationIdGuess)) {
+            console.log(`making a guess reservation id = ${reservationIdGuess}`);
+            let nextCourt = await axios.post('https://nvbc.ezfacility.com/Sessions/GetReservationForBooking', {
+                    ClientId: clientId,
+                    LocationId: locationId,
+                    ReservationId: reservationIdGuess
+                })
+                .then(response => {
+                    return response.data;
+                })
+                .catch(err => {
+                    console.error(err.statusText);
+                    return {id: NaN}
+                });
+            reservationMap.set(reservationIdGuess, nextCourt);
+        }
+        let reservationTarget = reservationMap.get(reservationIdGuess);
+        if (!isNaN(reservationTarget.id)) {
+            let day = moment(reservationTarget.start).format('dddd ha').toLowerCase();
+            if (day === `${slot.Day} ${slot.Time}`.toLowerCase() && reservationTarget.resourceName === court) {
+                console.log(`found ${reservationTarget.resourceName} on ${day}`);
+                return reservationTarget;
             }
         }
         ++reservationIdGuess;
@@ -62,9 +69,18 @@ async function bookIt(reservationTarget) {
     })
 }
 
+function notifySNS(msg) {
+    let params = {
+        Message: msg,
+        TopicArn: snsTopic
+    };
+
+    return new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+}
+
 async function bookNextWeek(desiredSlot, desiredCourt) {
     // get next 10 days schedule ...
-    let today = moment().format('YYYY-MM-DD'),
+    let today = moment().add(1, "days").format('YYYY-MM-DD'),
         tenDaysFromNow = moment().add(10, 'days').format('YYYY-MM-DD');
 
     // guess the reservation id
@@ -82,7 +98,7 @@ async function bookNextWeek(desiredSlot, desiredCourt) {
 
     if (seedingCourts.length === 0) {
         console.log("cannot find any desired courts for seeding");
-        return;
+        return false;
     }
 
     let reservationSeed = seedingCourts[0].id;
@@ -92,25 +108,43 @@ async function bookNextWeek(desiredSlot, desiredCourt) {
 
     if (!reservationTarget) {
         console.log('cannot find reservation for desired slot');
-        return;
+        return false;
     }
 
     //check if I've already booked the slot
     let booked = await isBooked(reservationTarget);
     if (booked) {
-        console.log("don't worry, it's already booked.");
-        return;
+        console.log("Jim, don't worry, it's already booked.");
+        return true;
     }
 
     //let's book it.
     try {
         await bookIt(reservationTarget);
         let day = moment(reservationTarget.start).calendar();
-        console.log(`Jim, the ${reservationTarget.resourceName} has been booked on ${day}, enjoy!`);
+        let msg = `Jim, the ${reservationTarget.resourceName} has been booked on ${day}, enjoy!`;
+        await notifySNS(msg);
+        return true;
     } catch (err) {
         console.log('Unable to book, probably already booked by someone else.')
     }
 }
 
-bookNextWeek({ Day: 'Saturday', Time: '2PM'}, 'Court 1');
-bookNextWeek({ Day: 'Monday', Time: '1PM'}, 'Court 6');
+exports.handler = async (event) => {
+    // TODO implement
+    const response = {
+        statusCode: 200,
+        body: JSON.stringify('Hello from Lambda!'),
+    };
+    for (let slot of desiredTimeSlots) {
+        for (let court of desiredCounts) {
+            let booked = await bookNextWeek(slot, court);
+            if (booked) {
+                break;
+            }
+        }
+    }
+    return response;
+};
+
+exports.handler();

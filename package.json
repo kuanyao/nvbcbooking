@@ -17,7 +17,10 @@
   },
   "homepage": "https://github.com/kuanyao/nvbcbooking#readme",
   "dependencies": {
+    "aws": "0.0.3-2",
+    "aws-sdk": "^2.817.0",
     "axios": "^0.21.1",
+    "lambda": "^0.10.3",
     "moment": "^2.29.1"
   }
 }
