@@ -150,5 +150,3 @@ exports.handler = async (event) => {
     }
     return response;
 };
-
-exports.handler();
