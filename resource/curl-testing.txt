@@ -1,0 +1,85 @@
+=== booked ===
+https://nvbc.ezfacility.com/Sessions/GetReservationForBooking
+
+curl -X POST -F clientId=23719554 -F reservationId=143455965 -F locationId=14743 https://nvbc.ezfacility.com/Sessions/GetReservationForBooking
+
+reservationId: 142861991
+reservationTypeId: 215235
+reservationStartDateTime: 2020 12 31  2:00:00 pm
+reservationEndDateTime: 2020 12 31  3:00:00 pm
+reservationResourceName: Court 4
+reservationTitle: Covid 19 Booking
+cultureCode: en-US
+allowedReservationTypeIDs: 
+defaultCalendarView: month
+publicSessions: false
+ddlName: 23719554
+packageId: 23989867
+clientId: 23719554
+locationId: 14743
+selectedPackageId: 23989867
+
+
+=== cancel req ===
+
+reservationId: 142861991
+reservationTypeId: 
+reservationStartDateTime: 2020 12 31  2:00:00 pm
+reservationEndDateTime: 2020 12 31  3:00:00 pm
+reservationResourceName: Court 4
+reservationTitle: Covid 19 Booking
+cultureCode: en-US
+allowedReservationTypeIDs: 
+defaultCalendarView: month
+publicSessions: 
+ddlName: 23719554
+clientId: 23719554
+locationId: 14743
+
+=== Book session ===
+https://nvbc.ezfacility.com/Sessions/BookClientIntoSession
+
+curl -X POST -F clientId=23719554 -F reservationId=143455904 -F locationId=14743 -F reservationTypeId=215235 -F packageId=23989867 -F selectedPackageId=23989867 https://nvbc.ezfacility.com/Sessions/BookClientIntoSession
+
+
+=== FilterResults ===
+https://nvbc.ezfacility.com/Sessions/FilterResults
+3719554
+LocationId: 14743
+Sunday: true
+Monday: true
+Tuesday: true
+Wednesday: true
+Thursday: true
+Friday: true
+Saturday: true
+StartTime: 12:00 AM
+EndTime: 12:00 AM
+ReservationTypes[0].Selected: true
+ReservationTypes[0].Id: -1
+ReservationTypes[1].Id: 201840
+ReservationTypes[2].Id: 215235
+ReservationTypes[3].Id: 222366
+ReservationTypes[4].Id: 222345
+ReservationTypes[5].Id: 222579
+ReservationTypes[6].Id: 222346
+ReservationTypes[7].Id: 209227
+ReservationTypes[8].Id: 225780
+ReservationTypes[9].Id: 225807
+ReservationTypes[10].Id: 222636
+ReservationTypes[11].Id: 222637
+ReservationTypes[12].Id: 222626
+ReservationTypes[13].Id: 222635
+Resources[0].Selected: true
+Resources[0].Id: -1
+Resources[1].Id: 300535
+Resources[2].Id: 300536
+Resources[3].Id: 300537
+Resources[4].Id: 300538
+Resources[5].Id: 305799
+Resources[6].Id: 305800
+Resources[7].Id: 305801
+Resources[8].Id: 305802
+Resources[9].Id: 305803
+StartDate: 2020-12-01
+EndDate: 2021-01-01
