@@ -7,7 +7,7 @@ const locationId = "14743"; 	// nvbc
 const packageId = "23989867"; 	// covid-19
 const snsTopic = "arn:aws:sns:us-east-1:456270554954:nvbc_notif";
 const desiredCounts = ['Court 1', 'Court 6', 'Court 2'];
-const desiredTimeSlots = [ { Day: 'Saturday', Time: '2PM'}, {Day: 'Saturday', Time: '3PM'}, {Day: 'Monday', Time: '3PM'}];
+const desiredTimeSlots = [ { Day: 'Saturday', Time: '2PM'}, {Day: 'Saturday', Time: '3PM'}];
 
 let reservationMap = new Map();
 
@@ -80,8 +80,8 @@ function notifySNS(msg) {
 
 async function bookNextWeek(desiredSlot, desiredCourt) {
     // get next 10 days schedule ...
-    let today = moment().add(1, "days").format('YYYY-MM-DD'),
-        tenDaysFromNow = moment().add(10, 'days').format('YYYY-MM-DD');
+    let today = moment().add(1, "days").utcOffset(-300).format('YYYY-MM-DD'),
+        tenDaysFromNow = moment().add(10, 'days').utcOffset(-300).format('YYYY-MM-DD');
 
     // guess the reservation id
     let seedingCourts = await axios.post('https://nvbc.ezfacility.com/Sessions/FilterResults',
@@ -123,7 +123,11 @@ async function bookNextWeek(desiredSlot, desiredCourt) {
         await bookIt(reservationTarget);
         let day = moment(reservationTarget.start).calendar();
         let msg = `Jim, the ${reservationTarget.resourceName} has been booked on ${day}, enjoy!`;
-        await notifySNS(msg);
+        try {
+            await notifySNS(msg);
+        } catch (err) {
+            console.log(err);
+        }
         return true;
     } catch (err) {
         console.log('Unable to book, probably already booked by someone else.')
