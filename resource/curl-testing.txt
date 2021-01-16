@@ -1,7 +1,7 @@
 === booked ===
 https://nvbc.ezfacility.com/Sessions/GetReservationForBooking
 
-curl -X POST -F clientId=23719554 -F reservationId=143455965 -F locationId=14743 https://nvbc.ezfacility.com/Sessions/GetReservationForBooking
+curl -X POST -F clientId=23719554 -F reservationId=143455827 -F locationId=14743 https://nvbc.ezfacility.com/Sessions/GetReservationForBooking
 
 reservationId: 142861991
 reservationTypeId: 215235
@@ -19,8 +19,18 @@ clientId: 23719554
 locationId: 14743
 selectedPackageId: 23989867
 
+=== Get client package ===
+https://nvbc.ezfacility.com/Sessions/GetClientPackages
+
+clientId: 23719554
+reservationTypeId: 215235
+locationId: 14743
+reservationStartDateTime: 2021-01-16T12:00:00.0000000
+
 
 === cancel req ===
+https://nvbc.ezfacility.com/Sessions/CancelClientForSession
+curl -x POST
 
 reservationId: 142861991
 reservationTypeId: 
@@ -39,7 +49,8 @@ locationId: 14743
 === Book session ===
 https://nvbc.ezfacility.com/Sessions/BookClientIntoSession
 
-curl -X POST -F clientId=23719554 -F reservationId=143455904 -F locationId=14743 -F reservationTypeId=215235 -F packageId=23989867 -F selectedPackageId=23989867 https://nvbc.ezfacility.com/Sessions/BookClientIntoSession
+curl -X POST -F clientId=23719445 -F reservationId=143456126 -F locationId=14743 -F reservationTypeId=215235 -F packageId=23989867 -F selectedPackageId=23989867 https://nvbc.ezfacility.com/Sessions/BookClientIntoSession
+curl -X POST -F clientId=23719554 -F reservationId=143456108 -F locationId=14743 -F reservationTypeId=215235 -F packageId=23989867 -F selectedPackageId=23989867 https://nvbc.ezfacility.com/Sessions/BookClientIntoSession
 
 
 === FilterResults ===
