@@ -13,7 +13,7 @@ const desiredTimeSlots = [ { Day: 'Saturday', Time: '2PM'}, {Day: 'Saturday', Ti
 let reservationMap = new Map();
 
 async function findReservationTarget(seeds, slot, court) {
-    const maxCall = 72;
+    const maxCall = 128;
     for (let seed of seeds) {
         let reservationIdGuess = seed;
         for (let count = 0; count < maxCall; ++count) {
@@ -24,14 +24,14 @@ async function findReservationTarget(seeds, slot, court) {
                     LocationId: locationId,
                     ReservationId: reservationIdGuess
                 })
-                    .then(response => {
-                        return response.data;
-                    })
-                    .catch(err => {
-                        // console.error(`error: ${err.statusText}`);
-                        console.error(`error: ${err}`);
-                        return {id: NaN}
-                    });
+                .then(response => {
+                    return response.data;
+                })
+                .catch(err => {
+                    // console.error(`error: ${err.statusText}`);
+                    console.error(`error: ${err}`);
+                    return {id: NaN}
+                });
                 reservationMap.set(reservationIdGuess, nextCourt);
             }
             let reservationTarget = reservationMap.get(reservationIdGuess);
