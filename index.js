@@ -139,7 +139,11 @@ async function bookNextWeek(startingDate, desiredSlot, desiredCourt) {
         return false;
     }
 
-    let reservationPossibleIds = seedingCourts.map(c => c.id);
+    // read the court number, and move the pointer back if needed.
+    let courtNumber = parseInt(/\d/.exec(seedingCourts[0].resourceName)[0]);
+    let seed = parseInt(seedingCourts[0].id) - 10 * courtNumber;
+    // let reservationPossibleIds = seedingCourts.map(c => c.id);
+    let reservationPossibleIds = [seed];
 
     // find out the reservation id
     let reservationTarget = await findReservationTarget(reservationPossibleIds, desiredSlot, desiredCourt);
@@ -159,7 +163,7 @@ async function bookNextWeek(startingDate, desiredSlot, desiredCourt) {
     //let's book it.
     booked = await bookIt(reservationTarget);
     if (booked) {
-        let day = moment(reservationTarget.start).calendar();
+        let day = moment(reservationTarget.start).format('MMM Do, dddd h A');
         let msg = `Jim, the ${reservationTarget.resourceName} has been booked on ${day}, enjoy!`;
         try {
             await notifySNS(msg);
@@ -173,7 +177,7 @@ async function bookNextWeek(startingDate, desiredSlot, desiredCourt) {
 exports.handler = async (event) => {
     let today = moment(),
         nextWeek = moment().add(1, 'week');
-    for (let startingDate of [today, nextWeek]) {
+    for (let startingDate of [nextWeek]) {
         for (let slot of desiredTimeSlots) {
             for (let court of desiredCounts) {
                 let booked = await bookNextWeek(startingDate, slot, court);
