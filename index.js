@@ -128,7 +128,9 @@ async function bookNextWeek(startingDate, desiredSlot, desiredCourt) {
             return response.data.filter(d => {
                 let day = moment(d.start).format('dddd');
                 if (day.toLowerCase() === desiredSlot.Day.toLowerCase()) {
-                    return true;
+                    if (d.title.startsWith('Available')) {
+                        return true;
+                    }
                 }
                 return false;
             }).sort((ct1, ct2) => ct1.start - ct2.start);
@@ -138,6 +140,8 @@ async function bookNextWeek(startingDate, desiredSlot, desiredCourt) {
         console.log("cannot find any desired courts for seeding");
         return false;
     }
+
+    // console.log(JSON.stringify(seedingCourts[0]));
 
     // read the court number, and move the pointer back if needed.
     let courtNumber = parseInt(/\d/.exec(seedingCourts[0].resourceName)[0]);
