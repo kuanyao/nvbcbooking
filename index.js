@@ -7,13 +7,13 @@ const LIN = "23719601";
 const bookingRoster = [clientId]
 const locationId = "14743"; 	// nvbc
 const snsTopic = "arn:aws:sns:us-east-1:456270554954:nvbc_notif";
-const desiredCounts = ['Court 1', 'Court 6', 'Court 2'];
+const desiredCounts = [1, 6, 7];
 const desiredTimeSlots = [ { Day: 'Saturday', Time: '2PM'}, {Day: 'Saturday', Time: '3PM'}];
 
 let reservationMap = new Map();
 
 async function findReservationTarget(seeds, slot, court) {
-    const maxCall = 128;
+    const maxCall = 12;
     for (let seed of seeds) {
         let reservationIdGuess = seed;
         for (let count = 0; count < maxCall; ++count) {
@@ -37,7 +37,8 @@ async function findReservationTarget(seeds, slot, court) {
             let reservationTarget = reservationMap.get(reservationIdGuess);
             if (!isNaN(reservationTarget.id)) {
                 let day = moment(reservationTarget.start).format('dddd ha').toLowerCase();
-                if (day === `${slot.Day} ${slot.Time}`.toLowerCase() && reservationTarget.resourceName === court) {
+                let courtNumber = parseInt(/\d/.exec(reservationTarget.resourceName));
+                if (day === `${slot.Day} ${slot.Time}`.toLowerCase() && courtNumber === court) {
                     console.log(`found ${reservationTarget.resourceName} on ${day}`);
                     return reservationTarget;
                 } else {
@@ -129,11 +130,12 @@ async function bookNextWeek(startingDate, desiredSlot, desiredCourt) {
                 let day = moment(d.start).format('dddd');
                 if (day.toLowerCase() === desiredSlot.Day.toLowerCase()) {
                     if (d.title.startsWith('Available')) {
+                        console.log(`${day}: ${d.title}, ${d.resourceName}, ${d.id}`);
                         return true;
                     }
                 }
                 return false;
-            }).sort((ct1, ct2) => ct1.start - ct2.start);
+            }).sort((ct1, ct2) => ct1.id - ct2.id);
         });
 
     if (seedingCourts.length === 0) {
@@ -145,7 +147,10 @@ async function bookNextWeek(startingDate, desiredSlot, desiredCourt) {
 
     // read the court number, and move the pointer back if needed.
     let courtNumber = parseInt(/\d/.exec(seedingCourts[0].resourceName)[0]);
-    let seed = parseInt(seedingCourts[0].id) - 10 * courtNumber;
+    let courtPositionShift = (desiredCourt - courtNumber) * 12;
+
+    let seed = parseInt(seedingCourts[0].id) + courtPositionShift;
+    // let seed = parseInt(seedingCourts[0].id);
     // let reservationPossibleIds = seedingCourts.map(c => c.id);
     let reservationPossibleIds = [seed];
 
@@ -181,7 +186,7 @@ async function bookNextWeek(startingDate, desiredSlot, desiredCourt) {
 exports.handler = async (event) => {
     let today = moment(),
         nextWeek = moment().add(1, 'week');
-    for (let startingDate of [nextWeek]) {
+    for (let startingDate of [today]) {
         for (let slot of desiredTimeSlots) {
             for (let court of desiredCounts) {
                 let booked = await bookNextWeek(startingDate, slot, court);
@@ -192,3 +197,5 @@ exports.handler = async (event) => {
         }
     }
 };
+
+// exports.handler();
